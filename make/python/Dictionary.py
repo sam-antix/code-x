@@ -1,14 +1,10 @@
 # Title: Dictionary.py
 # Date: 2022-10-06 20:49:04.000-05:00 (CST)
+# @author: samantix
 
 # ----------------------------------------------------------
 class Dictionary(object):
-    '''
-    class for making, assessing, and modifying dictionary objects
-
-    @author: samantix
-
-    '''
+    '''class for making, assessing, and modifying dictionary objects'''
     # * Initializer ------------------------------------------------
 
     def __init__(self, Dict):
