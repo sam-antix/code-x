@@ -3,6 +3,29 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+
+.DS_Store
+.vscode
+*.code-Workspace
+passphrase.txt
+logs
+.git
+*.md
+.cache
+
+
+# * Folders
+imagine
+markdown
+tests
+src
+tools
+.dockerattributes
+.gitattributes
+.gitmodules
+.mypy_cache
+.python-version
+
 # User-specific files
 *.rsuser
 *.suo
