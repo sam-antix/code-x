@@ -7,7 +7,7 @@ class Dictionary(object):
     '''class for making, assessing, and modifying dictionary objects'''
     # * Initializer ------------------------------------------------
 
-    def __init__(self, Dict):
+    def __init__(self, Dict={}):
         self.Dict = Dict
 
     # * Getters ----------------------------------------------------
@@ -82,7 +82,7 @@ class Dictionary(object):
 
     # * Doers ------------------------------------------------------
 
-    def gen_letters(self, case="l"):
+    def make_dict(self, case="l"):
         '''
         I: empty dictionary; case (u=upper, l=lower, a=all)
         O: dict  
@@ -90,34 +90,41 @@ class Dictionary(object):
         '''
         # ----------------------------------------------------------
         # *  Sub-methods
+        # Variables for improved readability
+        ascii_letter_range = 65
+        upper_case_letters = range(26)
+        lower_case_letter = range(32, 58)
 
         def upper_case():
-            return {chr(65+i): i for i in range(26)}
+            return {chr(ascii_letter_range + ucc_index): ucc_index for ucc_index in upper_case_letters}
 
         def lower_case():
-            return {chr(65+i): i for i in range(32, 58)}
+            return {chr(ascii_letter_range + lcc_index): lcc_index for lcc_index in lower_case_letter}
 
         def all_case():
             return ({**upper_case(), **lower_case()})
 
+        def paired_case():
+            return {chr(ascii_letter_range + ucc_index): [chr(ascii_letter_range + lcc_index) for lcc_index in lower_case_letter][ucc_index] for ucc_index in upper_case_letters}
         # ----------------------------------------------------------
         # * Option functions
 
         def invalid():
             print('Invalid command.\n')
 
-        def getLetters(case):
+        def get_case(case):
 
             option = {
-                "u": ("upper-case", upper_case),
-                "l": ("lower-case letters", lower_case),
-                "a": ("upper- & lower-case letters", all_case)
+                "l": ("Format: 'a':31,...'z':57 (default)", lower_case),
+                "u": ("Format: 'A':0,...'Z':25", upper_case),
+                "a": ("Format: 'A':0,...'z':57", all_case),
+                "p": ("Format: 'A':'a',...'Z':'z'", paired_case)
             }
 
             return option.get(case, [None, invalid])[1]()
         # ----------------------------------------------------------
 
-        return getLetters(case)
+        return get_case(case)
         # ----------------------------------------------------------
 
     def merge(self, d2={}):
@@ -195,3 +202,7 @@ class Dictionary(object):
 
         # join them horizontally, separated by a single space
         return ' '.join(keyList)
+
+
+d = Dictionary()
+print(d.make_dict('p'))
