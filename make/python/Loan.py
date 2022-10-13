@@ -15,18 +15,53 @@ class Loan(object):
         self.principal = principal
         self.annual_int_rate = annualInterestRate
         self.monthly_pmt_rate = monthlyPaymentRate
-        self.annual_months = 12
-        self.monthly_int_rate = self.annual_int_rate / self.annual_months
+        self.months_in_year = 12
+        self.monthly_int_rate = self.annual_int_rate / self.months_in_year
         self.month_of_pmt = 0
 
+    # + ------------------WORKING-------------------- +
+    def get_amortization(self, total_installments=12):
+        EMI, total_interest = self.amortize()
+        print("Amortization method: standard formula")
+        print(f"Original principal: ${self.principal}")
+        print(f"Min monthly payment: ${EMI}")
+        print(f"Total accrued interest: ${total_interest}")
+        print(f"Total to be paid: ${EMI * total_installments}")
+
+    # + ------------------WORKING-------------------- +
+    def get_amortization_10x(self, total_installments=12):
+        EMI, total_interest = self.amortize_10x()
+        print("Amortization method: factor 10")
+        print(f"Original principal: ${self.principal}")
+        print(f"Min monthly payment: ${EMI}")
+        print(f"Total accrued interest: ${total_interest}")
+        print(f"Total to be paid: ${EMI * total_installments}")
     # @ ------------------UNTESTED------------------- @
-    def get_balance(self):
-        return self.calc_balance()
+
+    def get_amortization_sx(self):
+        print(f"Lowest Payment: {self.amortize_sx()}")
+
+    # + ------------------WORKING-------------------- +
+
+    def get_min_amortization(self):
+        EMI_a, total_interest_a = self.amortize()
+        EMI_b, total_interest_b = self.amortize_10x()
+        if EMI_a <= EMI_b:
+            print("Best amortization: amortize")
+            return self.get_amortization()
+        else:
+            print("Best amortization: amortize_10x")
+            return self.get_amortization_10x()
+
+    # @ ------------------UNTESTED------------------- @
+    def get_simple_interest(self, term):
+        print(
+            f"Outstanding balance after {term} is ${self.calc_simple_interest()}")
 
     # @ ------------------UNTESTED------------------- @
     def __str__(self):
-        # return "Remaining balance: " + str(self.calc_balance)
-        return str(self.calc_balance())
+        # return "Remaining balance: " + str(self.calc_simple_interest)
+        return str(self.calc_simple_interest())
 
     # + ------------------WORKING-------------------- +
     def round_up(self, x, factor=1):
@@ -47,10 +82,10 @@ class Loan(object):
         return OLB
 
     # @ ------------------UNTESTED------------------- @
-    def calc_balance(self):
+    def calc_simple_interest(self):
         OLB = self.principal  # outstanding loan balance
         TMP_rate = self.monthly_pmt_rate
-        year = range(self.annual_months)
+        year = range(self.months_in_year)
         min_monthly_pmt = 0
         # ---------------------------------------------------
         for month in year:
@@ -65,7 +100,6 @@ class Loan(object):
         # * assumes: payments are factors of 10, interest is compounded monthly
         # * returns: lowest estimated monthly payment (float); and total accrued interest (float)
         '''
-        annualInterestRate = 0.2
         P = self.principal
         r = self.annual_int_rate
         t = years_of_payment
@@ -79,7 +113,6 @@ class Loan(object):
         total_accrued_interest = round(n*EMI*t-P, 2)
         return EMI, total_accrued_interest
 
-# ----------------------------------------------------------
     # ! -----------------ERRONEOUS------------------ !
     def amortize_10(self, required_months_of_payment=12):
         # compounded
@@ -104,7 +137,6 @@ class Loan(object):
         return EMI
 
     # + ------------------WORKING-------------------- +
-
     def amortize_10x(self, term=1):
         '''
         # * assumes: payments are factors of 10, interest is compounded monthly
@@ -130,37 +162,39 @@ class Loan(object):
         return EMI, total_accrued_interest
 
 # ----------------------------------------------------------
-    # + ------------------WORKING-------------------- +
-    def get_amortization(self, total_installments=12):
-        EMI, total_interest = self.amortize()
-        print("Amortization method: standard formula")
-        print(f"Original principal: ${self.principal}")
-        print(f"Min monthly payment: ${EMI}")
-        print(f"Total accrued interest: ${total_interest}")
-        print(f"Total to be paid: ${EMI * total_installments}")
+    def amortize_sx(self, term=1):
+        # Variable
+        principal = self.principal
+        r = self.monthly_int_rate
+        lower_EMI = principal/12
+        upper_EMI = (principal * (1 + self.annual_int_rate / 12)
+                     ** 12) / 12
+        median_EMI = (lower_EMI + upper_EMI)/2
+        # ----------------------------------------------------------
 
+        def update_principal(median_EMI, principal, r):
+            for months in range(12):
+                upper_EMI = principal - median_EMI
+                principal = upper_EMI + (r) * upper_EMI
+            return principal
+        # ----------------------------------------------------------
+        while True:
+            # update principal...
+            x = update_principal(median_EMI, principal, r)
+            # return if at goal...
+            if abs(round(x, 2)) == 0:
+                break
+            # ...or bisect again
+            # ----------------------------------------------------------
+            elif round(x, 2) > 0:
+                lower_EMI = median_EMI
+            else:
+                upper_EMI = median_EMI
+            median_EMI = (upper_EMI+lower_EMI)/2
+        return round(median_EMI, 2)
 # ----------------------------------------------------------
-    # + ------------------WORKING-------------------- +
-    def get_amortization_10x(self, total_installments=12):
-        EMI, total_interest = self.amortize_10x()
-        print("Amortization method: factor 10")
-        print(f"Original principal: ${self.principal}")
-        print(f"Min monthly payment: ${EMI}")
-        print(f"Total accrued interest: ${total_interest}")
-        print(f"Total to be paid: ${EMI * total_installments}")
-# ----------------------------------------------------------
-    # + ------------------WORKING-------------------- +
 
-    def get_min_amortization(self):
-        EMI_a, total_interest_a = self.amortize()
-        EMI_b, total_interest_b = self.amortize_10x()
-        if EMI_a <= EMI_b:
-            print("Best amortization: amortize")
-            return self.get_amortization()
-        else:
-            print("Best amortization: amortize_10x")
-            return self.get_amortization_10x()
-# ----------------------------------------------------------
+
 # @ --------------------------------------------- @
 # @                   TESTING                     @
 # @ --------------------------------------------- @
@@ -172,20 +206,54 @@ monthlyPaymentRate = 0.04
 term = 1
 total_installments = 12
 # ----------------------------------------------------------
-print("\n***Testing 'get_amortization' & 'amortize'***\n")
+
+
+print("\n##########################################")
+print("TESTING:")
+print("- get_amortization")
+print("- amortize")
+print("------------------------------------------\n")
+
 Loan(principal, annualInterestRate,
      monthlyPaymentRate).get_amortization(total_installments)
 
-print("\n***Testing 'get_amortization_10x' & 'amortize_10x'***\n")
+print("\n##########################################")
+print("TESTING:")
+print("- get_amortization_10x")
+print("- amortize_10x")
+print("------------------------------------------\n")
 
 Loan(principal, annualInterestRate,
      monthlyPaymentRate).get_amortization_10x(total_installments)
 
-print("\n***Testing 'get_min_amortization'***\n")
+print("\n##########################################")
+print("TESTING:")
+print("- get_min_amortization")
+print("------------------------------------------\n")
 
 Loan(principal, annualInterestRate,
      monthlyPaymentRate).get_min_amortization()
 
-print("\n***Testing 'amortize_10'***\n")
+print("\n##########################################")
+print("TESTING:")
+print("- get_amortization_10x")
+print("- amortize_10")
+print("------------------------------------------\n")
 
 print(Loan(principal, annualInterestRate, monthlyPaymentRate).amortize_10())
+
+print("\n##########################################")
+print("TESTING:")
+print("- get_simple_interest")
+print("- cal_simple_interest")
+print("------------------------------------------\n")
+
+Loan(principal, annualInterestRate, monthlyPaymentRate).get_simple_interest(term)
+
+print("\n##########################################")
+print("TESTING:")
+print("- get_amortization_sx")
+print("- amortization_sx")
+print("------------------------------------------\n")
+
+Loan(principal, annualInterestRate, monthlyPaymentRate).get_amortization_sx()
