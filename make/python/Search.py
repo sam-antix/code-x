@@ -8,7 +8,7 @@ Created: 2022-10-13 20:17:06
 
 class Search(object):
     '''
-    search iterables
+    search iterables (discrete data)
     '''
 
 # ----------------------------------------------------------
